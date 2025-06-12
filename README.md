@@ -19,3 +19,5 @@ models.py - структура БД
 README.md - текущий файл
 
 requirements.txt - требуемые библиотеки
+
+Structura BD.png - структура БД

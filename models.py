@@ -29,6 +29,14 @@ class Word(Base):
     total_cnt_error = Column(Integer, default=0)  # общий счётчик ошибок
     user_id = Column(BIGINT, ForeignKey('users.telegram_id'))  # id пользователя
     user = relationship("User", back_populates="words")
+    words_translator = relationship("WordTranslate", back_populates="translators")
+
+class WordTranslate(Base):
+    __tablename__ = 'words_translate'
+    id = Column(Integer, primary_key=True)
+    translation = Column(String)  # перевод слова
+    word_id = Column(Integer, ForeignKey('words.id'))  # id слова в таблице word
+    translators = relationship("Word", back_populates="words_translator")
 
 
 # Создание таблиц в БД

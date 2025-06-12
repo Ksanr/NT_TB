@@ -2,7 +2,7 @@ import random
 from telebot import types, TeleBot, State
 from telebot.states import StatesGroup
 from telebot.storage import StateMemoryStorage
-from models import SessionLocal, User, Word
+from models import SessionLocal, User, Word, WordTranslate
 from dotenv import load_dotenv
 from sqlalchemy import distinct
 import os, json
