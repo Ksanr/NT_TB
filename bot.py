@@ -215,15 +215,17 @@ def message_reply(message):
         russian_word = data['translate_word']
         word = session.query(Word).filter_by(user_id=user_id, word=russian_word).first()
         freq = word.freq
+        cnt_error = word.cnt_error
+        cnt_guessed = word.cnt_guessed
         if text == target_word:
             hint = show_target(data)
             hint_text = ["Отлично!❤", hint]
 
             word.total_cnt_guessed += 1
             cnt_guessed = word.cnt_guessed + 1
-            cnt_error = 0
             if (freq > 9 and cnt_guessed >= 3) or (freq and cnt_guessed >= 3 * (11 - freq)):
                 cnt_guessed = 0
+                cnt_error = 0
                 freq -= 1
             # next_btn = types.KeyboardButton(Command.NEXT)
             # add_word_btn = types.KeyboardButton(Command.ADD_WORD)
@@ -234,9 +236,9 @@ def message_reply(message):
 
             word.total_cnt_error += 1
             cnt_error = word.cnt_error + 1
-            cnt_guessed = 0
             if cnt_error >= 3 * freq:
                 cnt_error = 0
+                cnt_guessed = 0
                 freq += 1
 
             for btn in buttons:
