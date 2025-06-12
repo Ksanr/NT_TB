@@ -19,22 +19,27 @@ buttons = []
 def show_hint(*lines):
     return '\n'.join(lines)
 
+
 def show_target(data):
     return f"{data['target_word']} -> {data['translate_word']}"
+
 
 class Command:
     ADD_WORD = 'Добавить слово ➕'
     DELETE_WORD = 'Удалить слово🔙'
     NEXT = 'Дальше ⏭'
 
+
 class MyStates(StatesGroup):
     target_word = State()
     translate_word = State()
     another_words = State()
 
+
 def get_user(message):
     """Получаем пользователя по ID"""
     return session.query(User).filter_by(telegram_id=str(message.from_user.id)).first()
+
 
 def add_word(user, new_word, translation):
     """Добавляем новое слово в словарь пользователя"""
@@ -45,6 +50,7 @@ def add_word(user, new_word, translation):
         bot.send_message(user.telegram_id, f"Слово '{new_word}' успешно добавлено!")
     else:
         bot.send_message(user.telegram_id, f"Слово '{new_word}' уже существует.")
+
 
 def get_random_word(user_id):
     active_words = session.query(Word).filter_by(user_id=user_id).all()
@@ -61,6 +67,7 @@ def get_random_word(user_id):
     russian_word = russian_words[rnd]
     target_word = translates[rnd]
     return russian_word, target_word
+
 
 def get_another_words(active_word):
     another_words = [word[0] for word in session.query(distinct(Word.translation)).all()]
@@ -103,6 +110,7 @@ def guess_word(message):
         markup.add(*buttons)
         bot.send_message(message.chat.id, f'Отсутствуют слова для повторения', reply_markup=markup)
 
+
 def create_new_user(user_id):
     new_user = User(telegram_id=user_id)
     session.add(new_user)
@@ -115,33 +123,33 @@ def create_new_user(user_id):
         session.add(new_entry)
         session.commit()
 
+
 @bot.message_handler(commands=['cards', 'start'])
 def start_command(message):
     """Команда /start"""
     user = get_user(message)
 
     if not user:
-        create_new_user (message.from_user.id)
+        create_new_user(message.from_user.id)
         bot.reply_to(message, "Привет! Ты новый пользователь. Давай начнем изучение новых слов.")
     else:
         bot.reply_to(message, "Привет снова! Продолжим изучать английский.")
     guess_word(message)
+
 
 @bot.message_handler(func=lambda message: message.text == Command.NEXT)
 def next_cards(message):
     """Команда для вывода следующего слова"""
     guess_word(message)
 
+
 @bot.message_handler(func=lambda message: message.text == Command.DELETE_WORD)
 def delete_word(message):
-
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-
         word = session.query(Word).filter_by(user_id=message.from_user.id, word=data['translate_word']).first()
 
         word.freq = 0
         session.commit()
-
 
 
 @bot.message_handler(commands=['ADD_WORD'])
@@ -153,6 +161,7 @@ def add_word_command(message):
         add_word(user, word.strip(), translation.strip())
     except ValueError:
         bot.reply_to(message, "Используйте команду правильно: /ADD_WORD your_word your_translation")
+
 
 @bot.message_handler(func=lambda message: message.text == Command.ADD_WORD)
 def add_word_command(message):
@@ -173,7 +182,8 @@ def process_add_word_step_2(message):
         buttons = [next_btn, add_word_btn]
 
         markup.add(*buttons)
-        bot.reply_to(message, f"Частота вывода слова '{ru_word}' восстановлена на исходное значение!", reply_markup=markup)
+        bot.reply_to(message, f"Частота вывода слова '{ru_word}' восстановлена на исходное значение!",
+                     reply_markup=markup)
     else:
         msg = bot.reply_to(message, "Теперь введите перевод на английский язык:")
         bot.register_next_step_handler(msg, lambda m: save_new_word(m, ru_word))
@@ -192,8 +202,6 @@ def save_new_word(message, ru_word):
 
     markup.add(*buttons)
     bot.send_message(message.chat.id, f"Слово '{ru_word}' успешно добавлено!", reply_markup=markup)
-
-
 
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
@@ -217,10 +225,10 @@ def message_reply(message):
             if (freq > 9 and cnt_guessed >= 3) or (freq and cnt_guessed >= 3 * (11 - freq)):
                 cnt_guessed = 0
                 freq -= 1
-            #next_btn = types.KeyboardButton(Command.NEXT)
-            #add_word_btn = types.KeyboardButton(Command.ADD_WORD)
-            #delete_word_btn = types.KeyboardButton(Command.DELETE_WORD)
-            #buttons.extend([next_btn, add_word_btn, delete_word_btn])
+            # next_btn = types.KeyboardButton(Command.NEXT)
+            # add_word_btn = types.KeyboardButton(Command.ADD_WORD)
+            # delete_word_btn = types.KeyboardButton(Command.DELETE_WORD)
+            # buttons.extend([next_btn, add_word_btn, delete_word_btn])
             hint = show_hint(*hint_text)
         else:
 
@@ -244,9 +252,9 @@ def message_reply(message):
 
     session.commit()
 
-
     markup.add(*buttons)
     bot.send_message(message.chat.id, hint, reply_markup=markup)
+
 
 if __name__ == '__main__':
     print("Запускаю бот...")
