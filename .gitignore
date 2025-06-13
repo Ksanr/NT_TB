@@ -1,3 +1,4 @@
 .env
 pdgtvk.py
 .idea/
+__pycache__/
